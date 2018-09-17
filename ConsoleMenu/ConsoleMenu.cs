@@ -12,7 +12,7 @@ namespace SimpleConsoleMenu
 
     public class ConsoleMenu
     {
-        public class Command
+        internal class Command
         {
             CommandCall function;
             private ConsoleMenu menu;
@@ -23,33 +23,15 @@ namespace SimpleConsoleMenu
                 this.function();
             }
 
-            internal string label;
-            public string Label
-            {
-                get
-                {
-                    return label;
-                }
-                internal set
-                {
-                    unpaddedLabel = value;
-                    if(menu != null)
-                    {
-                        menu.applyPadding();
-                    }
-                    else
-                    {
-                        label = value;
-                    }
-                }
-            }
-            internal string unpaddedLabel;
+            public string Label { get; set; }
+            public string UnpaddedLabel { get; set; }
 
-            public Command(string name, CommandCall fn)
+            public Command(string name, CommandCall fn, ConsoleMenu menu)
             {
-                this.unpaddedLabel = name;
+                this.UnpaddedLabel = name;
                 this.Label = name;
                 this.function = fn;
+                this.menu = menu;
             }
         }
 
@@ -69,14 +51,9 @@ namespace SimpleConsoleMenu
             }
         }
 
-        public static void AddCommand(Command command)
+        public static void AddCommand(string label, CommandCall action)
         {
-            _menu.commands.Add(command);
-            _menu.applyPadding();
-        }
-
-        public static void AddCommand(Command[] commands) {
-            _menu.commands.AddRange(commands);
+            _menu.commands.Add(new Command(label, action, _menu));
             _menu.applyPadding();
         }
 
@@ -85,26 +62,26 @@ namespace SimpleConsoleMenu
             if (commands.Count < 1)
                 return;
 
-            Command longest = this.commands.OrderByDescending(x => x.unpaddedLabel.Length).First();
+            Command longest = this.commands.OrderByDescending(x => x.UnpaddedLabel.Length).First();
 
             int static_left = commands.Count.ToString().Length + 2; // number + space
-            int l = longest.unpaddedLabel.Length + static_left; // how wide we go
+            int l = longest.UnpaddedLabel.Length + static_left; // how wide we go
             l = l % 2 == 0 ? l : l + 1; // make even if not
 
             foreach(Command c in this.commands)
             {
-                c.label = c.unpaddedLabel;
+                c.Label = c.UnpaddedLabel;
                 bool t = false;
-                for(int i = 0; c.label.Length < l; i++)
+                for(int i = 0; c.Label.Length < l; i++)
                 {
                     if (i < static_left)
                     {
-                        c.label = c.label + " ";
+                        c.Label = c.Label + " ";
                         t = true;
                     }
                     else
                     {
-                        c.label = i % 2 != 0 || t ? " " + c.label : c.label + " ";
+                        c.Label = i % 2 != 0 || t ? " " + c.Label : c.Label + " ";
                         t = false;
                     }
                 }

@@ -30,20 +30,20 @@ namespace test
         static void Main(string[] args)
         {
 
-            ConsoleMenu.AddCommand(new ConsoleMenu.Command("Action 1", () =>
+            ConsoleMenu.AddCommand("Action 1", () =>
             {
                 Console.WriteLine("Action 1 Called");
                 Console.ReadKey();
-            }));
-            ConsoleMenu.AddCommand(new ConsoleMenu.Command("You may prefer action 2", () =>
+            });
+            ConsoleMenu.AddCommand("You may prefer action 2", () =>
             {
                 Console.WriteLine("Action 2 Called");
                 Console.ReadKey();
-            }));
-            ConsoleMenu.AddCommand(new ConsoleMenu.Command("Exit", () =>
+            });
+            ConsoleMenu.AddCommand("Exit", () =>
             {
                 run = false;
-            }));
+            });
 
             while (run)
             {
