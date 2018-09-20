@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SimpleConsoleMenu
 {
-    public delegate void CommandCall();
+    public delegate void CommandCall(ConsoleMenu self);
 
     
 
@@ -20,7 +20,7 @@ namespace SimpleConsoleMenu
             {
                 Console.Clear();
                 Console.CursorVisible = true;
-                this.function();
+                this.function(menu);
             }
 
             public string Label { get; set; }
@@ -35,26 +35,32 @@ namespace SimpleConsoleMenu
             }
         }
 
-        private static ConsoleMenu _menu = new ConsoleMenu();
-
         private int command = 0;
         private List<Command> commands = new List<Command>();
-        private ConsoleMenu() {
-            this.commands = new List<Command>();
+        private List<ConsoleMenu> subMenus = new List<ConsoleMenu>();
+        private bool run;
+       
+        public void AddCommand(string label, CommandCall action)
+        {
+            commands.Add(new Command(label, action, this));
+            applyPadding();
         }
 
-        public static ConsoleMenu Menu
+        public void AddSubMenu(string label, ConsoleMenu subMenu, bool addBackAction = true, string backActionLabel = "Back")
         {
-            get
+            if(addBackAction)
             {
-                return _menu;
+                subMenu.AddCommand(backActionLabel, (m) =>
+                {
+                    m.Exit();
+                });
             }
-        }
-
-        public static void AddCommand(string label, CommandCall action)
-        {
-            _menu.commands.Add(new Command(label, action, _menu));
-            _menu.applyPadding();
+            commands.Add(new Command(label, (m) =>
+            {
+                m.Exit();
+                subMenu.Show();
+                m.Show();
+            }, this));
         }
 
         private void applyPadding()
@@ -90,38 +96,48 @@ namespace SimpleConsoleMenu
         
         public void Show()
         {
-            PrintMenu(commands, command);
-            Console.CursorVisible = false;
-            var key = Console.ReadKey();
-            switch (key.Key)
+            this.run = true;
+            while (this.run)
             {
-                case ConsoleKey.UpArrow:
-                    command--;
-                    if (command < 0)
-                        command = commands.Count - 1;
-                    break;
+                PrintMenu(commands, command);
+                Console.CursorVisible = false;
+                var key = Console.ReadKey();
+                switch (key.Key)
+                {
+                    case ConsoleKey.UpArrow:
+                        command--;
+                        if (command < 0)
+                            command = commands.Count - 1;
+                        break;
 
-                case ConsoleKey.DownArrow:
-                    command++;
-                    if (command == commands.Count)
-                        command = 0;
-                    break;
+                    case ConsoleKey.DownArrow:
+                        command++;
+                        if (command == commands.Count)
+                            command = 0;
+                        break;
 
-                case ConsoleKey.Enter:
-                    commands[command].Execute();
-                    break;
-                default:
-                    int input = 0;
-                    Int32.TryParse(key.KeyChar.ToString(), out input);
-                    if (input > 0 && input < commands.Count + 1)
-                    {
-                        command = input - 1;
+                    case ConsoleKey.Enter:
                         commands[command].Execute();
-                    }
+                        break;
+                    default:
+                        int input = 0;
+                        Int32.TryParse(key.KeyChar.ToString(), out input);
+                        if (input > 0 && input < commands.Count + 1)
+                        {
+                            command = input - 1;
+                            commands[command].Execute();
+                        }
 
-                    break;
+                        break;
+                }
             }
         }
+
+        public void Exit()
+        {
+            run = false;
+        }
+
 
         private void PrintMenu(List<Command> commands, int highlight)
         {

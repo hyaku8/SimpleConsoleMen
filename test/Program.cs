@@ -21,35 +21,33 @@ namespace test
             Console.ReadKey();
         }
 
-        static void Exit()
-        {
-            run = false;
-        }
-        static bool run = true;
-
         static void Main(string[] args)
         {
-
-            ConsoleMenu.AddCommand("Action 1", () =>
+            ConsoleMenu menu = new ConsoleMenu();
+            ConsoleMenu subMenu = new ConsoleMenu();
+            subMenu.AddCommand("Do nothing", (sm) =>
             {
-                Console.WriteLine("Action 1 Called");
+                Console.WriteLine("nothing done");
                 Console.ReadKey();
             });
-            ConsoleMenu.AddCommand("You may prefer action 2", () =>
+            subMenu.AddCommand("Do something else", (sm) =>
+            {
+                Console.WriteLine("still not doing jack shit");
+                Console.ReadKey();
+            });
+            menu.AddSubMenu("Action 1: submenu", subMenu);
+            menu.AddCommand("You may prefer action 2", (m) =>
             {
                 Console.WriteLine("Action 2 Called");
                 Console.ReadKey();
             });
-            ConsoleMenu.AddCommand("Exit", () =>
+            menu.AddCommand("Exit", (m) =>
             {
-                run = false;
+                m.Exit();
             });
 
-            while (run)
-            {
-                // navigate the menu with arrow keys and select with enter or use number as shortcut
-                ConsoleMenu.Menu.Show();
-            }
+            // navigate the menu with arrow keys and select with enter or use number as shortcut
+            menu.Show();
         }
     }
 }
